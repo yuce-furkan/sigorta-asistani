@@ -6,7 +6,7 @@ st.set_page_config(page_title="Sigorta Rehberim", page_icon="🛡️")
 
 # Gemini Bağlantısı
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel('gemini-1.5-flash') # Hızlı ve ücretsiz model
+model = genai.GenerativeModel('models/gemini-1.5-flash')
 
 def poliçe_analiz_et(metin):
     # Senin "Cam Koruma" hassasiyetini içeren prompt
