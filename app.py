@@ -1,38 +1,43 @@
 import streamlit as st
-import PyPDF2 # PDF okuma kütüphanesi
+import PyPDF2
+import google.generativeai as genai
 
 st.set_page_config(page_title="Sigorta Rehberim", page_icon="🛡️")
 
-def pdf_metin_ayikla(file):
-    pdf_reader = PyPDF2.PdfReader(file)
-    metin = ""
-    for page in pdf_reader.pages:
-        metin += page.extract_text()
-    return metin
+# Gemini Bağlantısı
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+model = genai.GenerativeModel('gemini-1.5-flash') # Hızlı ve ücretsiz model
 
-st.title("🛡️ Sigorta Rehberim")
-st.subheader("Poliçenizi yükleyin, yapay zeka analiz etsin.")
+def poliçe_analiz_et(metin):
+    # Senin "Cam Koruma" hassasiyetini içeren prompt
+    prompt = f"""Bir uzman sigorta danışmanı gibi davran. Aşağıdaki poliçe metnini analiz et:
+    1. İMM (İhtiyari Mali Mesuliyet) limitini bul, enflasyona göre yeterli mi yorumla.
+    2. Muafiyetleri (kesintileri) açıkla.
+    3. KRİTİK: Cam koruma/kırılması teminatı var mı? Muafiyet durumu nedir? (Bu konu bizim için çok önemli).
+    4. En önemli 3 teminatı basitçe listele.
+    
+    Poliçe Metni: {metin[:8000]}""" # Gemini daha fazla karakter okuyabilir
+    
+    response = model.generate_content(prompt)
+    return response.text
 
-uploaded_file = st.file_uploader("Poliçe PDF'ini seçin", type="pdf")
+st.title("🛡️ Akıllı Sigorta Analisti (Gemini)")
+uploaded_file = st.file_uploader("Poliçe PDF'ini yükle", type="pdf")
 
 if uploaded_file:
-    # PDF'i oku
-    with st.spinner("Poliçe okunuyor, lütfen bekleyin..."):
-        poliçe_metni = pdf_metin_ayikla(uploaded_file)
+    with st.spinner("Gemini poliçeyi inceliyor..."):
+        reader = PyPDF2.PdfReader(uploaded_file)
+        full_text = ""
+        for page in reader.pages:
+            full_text += page.extract_text()
+            
+        analiz_sonucu = poliçe_analiz_et(full_text)
         
-    st.success("Poliçe metni başarıyla okundu!")
+    st.success("Analiz Tamamlandı!")
+    st.markdown(analiz_sonucu)
     
-    # Şimdilik metnin ilk 500 karakterini görelim (test için)
-    st.write("### Poliçe Ön İzleme (İlk 500 Karakter)")
-    st.text(poliçe_metni[:500] + "...")
-
-    # ANALİZ BUTONU
-    if st.button("Poliçeyi Sadeleştir ve Analiz Et"):
-        st.write("---")
-        st.info("🤖 Yapay zeka analizi hazırlanıyor...")
-        # Bir sonraki adımda buraya Claude API bağlanacak
-        st.markdown(f"""
-        ### 📊 Analiz Sonuçları (Taslak)
-        * **Poliçe Uzunluğu:** {len(poliçe_metni)} karakter.
-        * **Kritik Kontrol:** İMM, Muafiyet ve Teminatlar taranıyor...
-        """)
+    # Senin iletişim butonun
+    st.divider()
+    st.write("### Sorularınız mı var?")
+    whatsapp_link = "https://wa.me/905550564452?text=Poliçe%20analizim%20hakkında%20bilgi%20almak%20istiyorum."
+    st.link_button("Furkan Yüce'ye WhatsApp'tan Sor", whatsapp_link)
