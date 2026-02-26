@@ -1,43 +1,38 @@
 import streamlit as st
+import PyPDF2 # PDF okuma kütüphanesi
 
-# Uygulama Başlığı ve Ayarları
 st.set_page_config(page_title="Sigorta Rehberim", page_icon="🛡️")
 
+def pdf_metin_ayikla(file):
+    pdf_reader = PyPDF2.PdfReader(file)
+    metin = ""
+    for page in pdf_reader.pages:
+        metin += page.extract_text()
+    return metin
+
 st.title("🛡️ Sigorta Rehberim")
-st.subheader("Poliçenizi yükleyin, karmaşadan kurtulun!")
+st.subheader("Poliçenizi yükleyin, yapay zeka analiz etsin.")
 
-# 1. Dosya Yükleme Alanı
-uploaded_file = st.file_uploader("Poliçe PDF dosyasını buraya sürükleyin", type="pdf")
+uploaded_file = st.file_uploader("Poliçe PDF'ini seçin", type="pdf")
 
-if uploaded_file is not None:
-    st.success("Poliçe başarıyla yüklendi! Analiz ediliyor...")
+if uploaded_file:
+    # PDF'i oku
+    with st.spinner("Poliçe okunuyor, lütfen bekleyin..."):
+        poliçe_metni = pdf_metin_ayikla(uploaded_file)
+        
+    st.success("Poliçe metni başarıyla okundu!")
     
-    # İleride burası Yapay Zeka (Claude API) ile bağlanacak
-    # Şimdilik senin istediğin o 3 kritik başlığı simüle ediyoruz
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.info("### 🚗 İMM Limiti")
-        st.write("**Mevcut:** 10.000.000 TL")
-        st.warning("⚠️ Not: Enflasyon karşısında bu limit riskli olabilir. 20M+ önerilir.")
+    # Şimdilik metnin ilk 500 karakterini görelim (test için)
+    st.write("### Poliçe Ön İzleme (İlk 500 Karakter)")
+    st.text(poliçe_metni[:500] + "...")
 
-    with col2:
-        st.error("### 🔍 Muafiyetler")
-        st.write("- Deprem hasarlarında %2 muafiyet.")
-        st.write("- Cam kırılmasında 1 defaya mahsus muafiyetsiz değişim.")
-
-    st.divider()
-    
-    st.success("### ✅ Teminatlar ve Avantajlar")
-    st.markdown("""
-    * **Yol Yardım:** 7/24 sınırsız çekici hizmeti.
-    * **İkame Araç:** Yılda 2 kez, 15 güne kadar araç desteği.
-    * **Mini Onarım:** Boyasız göçük düzeltme dahil.
-    """)
-    
-    # Danışman Notu (Senin dokunuşun)
-    st.chat_message("assistant").write("Merhaba Furkan, bu poliçe genel olarak iyi ama İMM limitini yükseltmen için bir ek zeyilname yaptırmanı öneririm.")
-
-else:
-    st.info("Lütfen analiz için bir poliçe dosyası yükleyin.")
+    # ANALİZ BUTONU
+    if st.button("Poliçeyi Sadeleştir ve Analiz Et"):
+        st.write("---")
+        st.info("🤖 Yapay zeka analizi hazırlanıyor...")
+        # Bir sonraki adımda buraya Claude API bağlanacak
+        st.markdown(f"""
+        ### 📊 Analiz Sonuçları (Taslak)
+        * **Poliçe Uzunluğu:** {len(poliçe_metni)} karakter.
+        * **Kritik Kontrol:** İMM, Muafiyet ve Teminatlar taranıyor...
+        """)
