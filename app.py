@@ -13,7 +13,7 @@ else:
 
 def poliçe_analiz_et(metin):
     # En kararlı model ismini kullanıyoruz
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-pro')
     
     prompt = f"""Bir uzman sigorta danışmanı gibi davran. Aşağıdaki poliçe metnini analiz et:
     1. İMM (İhtiyari Mali Mesuliyet) limitini bul ve enflasyona göre yeterli mi yorumla.
